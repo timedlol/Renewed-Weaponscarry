@@ -78,6 +78,23 @@ local function createAllObjects(pedHandle, addItems, currentTable, amount)
     end
 end
 
+local function syncPlayerProps(serverId, pedHandle, items)
+    local currentTable = Players[serverId] or {}
+    local amount = #currentTable
+
+    if amount > 0 then
+        Utils.removeEntities(currentTable)
+        table.wipe(currentTable)
+        amount = 0
+    end
+
+    if items and table.type(items) ~= 'empty' then
+        createAllObjects(pedHandle, items, currentTable, amount)
+    end
+
+    Players[serverId] = currentTable
+end
+
 AddStateBagChangeHandler('weapons_carry', nil, function(bagName, keyName, value, _, replicated)
     if replicated then
         return
@@ -90,21 +107,35 @@ AddStateBagChangeHandler('weapons_carry', nil, function(bagName, keyName, value,
     end
 
     if pedHandle > 0 then
-        local currentTable = Players[serverId] or {}
-        local amount = #currentTable
+        local player = serverId and Player(serverId)
 
-        if amount > 0 then
-            Utils.removeEntities(currentTable)
-            table.wipe(currentTable)
-            amount = 0
+        if player and player.state.has_back_bag then
+            return syncPlayerProps(serverId, pedHandle, {})
         end
 
-        if value and table.type(value) ~= 'empty' then
-            createAllObjects(pedHandle, value, currentTable, amount)
-        end
-
-        Players[serverId] = currentTable
+        syncPlayerProps(serverId, pedHandle, value)
     end
+end)
+
+AddStateBagChangeHandler('has_back_bag', nil, function(bagName, keyName, value, _, replicated)
+    if replicated then
+        return
+    end
+
+    local serverId, pedHandle = Utils.getEntityFromStateBag(bagName, keyName)
+
+    if not serverId or pedHandle <= 0 then
+        return
+    end
+
+    if value then
+        return syncPlayerProps(serverId, pedHandle, {})
+    end
+
+    local player = Player(serverId)
+    local items = player and player.state.weapons_carry or {}
+
+    syncPlayerProps(serverId, pedHandle, items)
 end)
 
 local playerState = LocalPlayer.state
@@ -119,7 +150,11 @@ local function updateState(inventory, currentWeapon)
 
     local items = formatPlayerInventory(inventory, currentWeapon)
 
-    if not playerState.hide_props and not lib.table.matches(items, playerState.weapons_carry or {}) then
+    if playerState.has_back_bag or cache.vehicle then
+        if playerState.weapons_carry and table.type(playerState.weapons_carry) ~= 'empty' then
+            playerState:set('weapons_carry', false, true)
+        end
+    elseif not playerState.hide_props and not lib.table.matches(items, playerState.weapons_carry or {}) then
         playerState:set('weapons_carry', items, true)
     end
 end

@@ -1,11 +1,14 @@
 local ox_items = exports.ox_inventory:Items()
 local Utils = {}
+local BAG_COMPONENT_ID = 5
+local MIN_BAG_DRAWABLE = 1
+local MAX_BAG_DRAWABLE = 300
 
 local playerSlots = {
 	{ -- Bigger weapons such as bats, crowbars, Assaultrifles, and also good place for wet weed.
-		{ bone = 24817, pos = vec3(0.04, -0.15, 0.12), rot = vec3(0.0, 0.0, 0.0) },
-		{ bone = 24817, pos = vec3(0.04, -0.17, 0.02), rot = vec3(0.0, 0.0, 0.0) },
-		{ bone = 24817, pos = vec3(0.04, -0.19, -0.08), rot = vec3(0.0, 0.0, 0.0) },
+		{ bone = 24817, pos = vec3(0.16, -0.15, 0.05), rot = vec3(0.0, 180.0, 0.0) },
+		{ bone = 24817, pos = vec3(0.16, -0.17, 0.02), rot = vec3(0.0, 180.0, 0.0) },
+		{ bone = 24817, pos = vec3(0.16, -0.19, -0.08), rot = vec3(0.0, 180.0, 0.0) },
 	},
 
 	{ -- Use this for katana knives etc. stuff that goes sideways on the players body
@@ -177,6 +180,17 @@ function Utils.AttachEntityToPlayer(item, entity, pedHandle)
     if pos and rot then
         AttachEntityToEntity(entity, pedHandle, GetPedBoneIndex(pedHandle, item.bone), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, true, true, false, false, 2, true)
     end
+end
+
+function Utils.isWearingBag(ped)
+    ped = ped or cache.ped
+    if not ped or ped <= 0 then
+        return false
+    end
+
+    local drawable = GetPedDrawableVariation(ped, BAG_COMPONENT_ID)
+
+    return drawable >= MIN_BAG_DRAWABLE and drawable <= MAX_BAG_DRAWABLE
 end
 
 local function createObject(item)
