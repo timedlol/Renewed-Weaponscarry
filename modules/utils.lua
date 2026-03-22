@@ -1,8 +1,6 @@
 local ox_items = exports.ox_inventory:Items()
+local BagConfig = require 'data.bags'
 local Utils = {}
-local BAG_COMPONENT_ID = 5
-local MIN_BAG_DRAWABLE = 1
-local MAX_BAG_DRAWABLE = 300
 
 local playerSlots = {
 	{ -- Bigger weapons such as bats, crowbars, Assaultrifles, and also good place for wet weed.
@@ -188,9 +186,19 @@ function Utils.isWearingBag(ped)
         return false
     end
 
-    local drawable = GetPedDrawableVariation(ped, BAG_COMPONENT_ID)
+    local drawable = GetPedDrawableVariation(ped, BagConfig.componentId)
 
-    return drawable >= MIN_BAG_DRAWABLE and drawable <= MAX_BAG_DRAWABLE
+    if drawable < BagConfig.minDrawable or drawable > BagConfig.maxDrawable then
+        return false
+    end
+
+    for i = 1, #(BagConfig.disabledDrawables or {}) do
+        if drawable == BagConfig.disabledDrawables[i] then
+            return false
+        end
+    end
+
+    return true
 end
 
 local function createObject(item)
