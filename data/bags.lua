@@ -3,7 +3,6 @@ return {
     minDrawable = 1,
     maxDrawable = 300,
     disabledDrawables = {
-        -- Add bag drawable ids here to ignore them.
-        -- Example: 45, 82
+        165, 164, 163, 159, 156, 154, 153, 151, 149, 143, 142, 141, 138, 137, 133, 132, 131, 130, 128, 127, 126, 125, 124, 123, 122, 121, 119, 118, 117, 116, 115, 114, 113, 112, 87, 83, 46, 43, 42, 30, 9
     }
 }
